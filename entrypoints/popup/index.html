@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GatePaste</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <header>
+      <span class="logo">🔒</span>
+      <h1>GatePaste</h1>
+    </header>
+
+    <section class="status-section">
+      <div class="status-row">
+        <span id="statusIndicator" class="status-dot active"></span>
+        <span id="statusText">Active</span>
+      </div>
+      <p id="domainDisplay" class="domain"></p>
+    </section>
+
+    <section class="scan-section">
+      <p class="scan-count" id="scanCount">0 secrets detected today</p>
+      <button id="scanBtn" class="btn btn-primary">📋 Scan Clipboard</button>
+    </section>
+
+    <section class="scan-result" id="scanResult" hidden>
+      <h3 id="resultTitle"></h3>
+      <ul id="resultList"></ul>
+    </section>
+
+    <footer class="actions">
+      <button id="pauseBtn" class="btn btn-text">🔇 Pause for Site</button>
+      <button id="optionsBtn" class="btn btn-text">⚙️ Options</button>
+    </footer>
+
+    <div id="errorMsg" class="error" hidden></div>
+  </div>
+  <script type="module" src="main.ts"></script>
+</body>
+</html>

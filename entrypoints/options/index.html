@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GatePaste — Settings</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>⚙️ GatePaste Settings</h1>
+    </header>
+
+    <!-- General -->
+    <section>
+      <h2>General</h2>
+      <label class="toggle-row">
+        <span>Enable automatic paste interception</span>
+        <input type="checkbox" id="enableInterception" />
+      </label>
+      <label class="toggle-row">
+        <span>Show warning overlay on secret detection</span>
+        <input type="checkbox" id="showOverlay" />
+      </label>
+      <label class="toggle-row">
+        <span>Mask secrets by default</span>
+        <input type="checkbox" id="maskByDefault" />
+      </label>
+      <div class="select-row">
+        <label for="sensitivity">Detection sensitivity</label>
+        <select id="sensitivity">
+          <option value="low">Low (fewer alerts)</option>
+          <option value="medium" selected>Medium (balanced)</option>
+          <option value="high">High (catch everything)</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Domain Rules -->
+    <section>
+      <h2>Domain Rules</h2>
+      <p class="help-text">Control how GatePaste behaves on specific sites.</p>
+      <div id="domainRules"></div>
+      <div class="add-domain-row">
+        <input type="text" id="newDomain" placeholder="e.g. github.com" />
+        <select id="newDomainAction">
+          <option value="ask">Ask</option>
+          <option value="allow">Allow</option>
+          <option value="block">Block</option>
+        </select>
+        <button id="addDomainBtn" class="btn btn-sm">Add</button>
+      </div>
+    </section>
+
+    <!-- Audit Log -->
+    <section>
+      <h2>Audit Log</h2>
+      <p class="help-text">Recent secret detection events.</p>
+      <div id="auditLog">
+        <p class="placeholder">No events yet.</p>
+      </div>
+      <button id="clearAuditBtn" class="btn btn-sm btn-secondary">Clear Log</button>
+    </section>
+
+    <!-- About -->
+    <section class="about">
+      <h2>About GatePaste</h2>
+      <p>GatePaste v1.0.0 — MIT License</p>
+      <p>Clipboard content never leaves your device. All detection runs locally.</p>
+    </section>
+  </div>
+  <script type="module" src="main.ts"></script>
+</body>
+</html>

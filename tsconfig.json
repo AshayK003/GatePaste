@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "types": ["wxt/client", "vitest/globals"]
+  },
+  "include": ["**/*.ts", "**/*.d.ts", "wxt.config.ts"],
+  "exclude": ["node_modules", "dist", ".wxt"]
+}
