@@ -114,7 +114,7 @@ export const PATTERNS: DetectionPattern[] = [
     regex: /[MN][A-Za-z0-9_-]{23,28}\.[A-Za-z0-9_-]{6,7}\.[A-Za-z0-9_-]{27,}/i,
     severity: 'critical',
     description: 'Discord bot or user token',
-    testCases: ['MTAxMjM0NTY3ODkwMTIzNDU2.Gabcdef.ABC123DEF456GHI789JKL012MNO345PQR678STU'],
+    testCases: ['MTIzNDU2Nzg5MDEyMzQ1Njc4OQ.GHIJKL.ABCDEF0123456789GHIJKLMNOPQRSTUVWXYZabcdef'],
   },
   {
     id: 'telegram-token',
