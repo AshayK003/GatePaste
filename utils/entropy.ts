@@ -46,7 +46,7 @@ export function isHighEntropy(str: string, threshold?: number): boolean {
 /**
  * Determine appropriate entropy threshold based on character set.
  */
-export function getEntropyThreshold(str: string): number {
+function getEntropyThreshold(str: string): number {
   if (/[+/=]/.test(str) && str.length > 20) {
     // Likely Base64 — high threshold
     return 4.5;

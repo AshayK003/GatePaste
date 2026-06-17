@@ -11,10 +11,9 @@
 
 import { detectSecrets } from '../utils/detector';
 import { showOverlay } from '../utils/overlay';
-import type { OverlayResult } from '../utils/overlay';
+import type { OverlayResult, OverlayAction } from '../utils/overlay';
 import type { Finding } from '../utils/detector';
 import { addAuditEntry, set, get } from '../utils/storage';
-import type { DomainRule } from '../utils/storage';
 
 type Config = {
   enabled: boolean;
@@ -33,7 +32,11 @@ export default defineContentScript({
     });
 
     // ── Paste Interception ──────────────────────────────────────────────────
+    let processing = false;
     document.addEventListener('paste', async (event: ClipboardEvent) => {
+      if (processing) return;
+      processing = true;
+      try {
       const config = await getConfig();
       if (!config.enabled) return;
 
@@ -72,8 +75,10 @@ export default defineContentScript({
       }
 
       await handleAction(overlayResult.action, text, result.findings, domain);
+      } finally {
+        processing = false;
+      }
     });
-
 
   },
 });

@@ -46,7 +46,7 @@ GatePaste/
 │   ├── overlay.ts           # Shadow DOM warning overlay (Escape to close, domain opt-out)
 │   └── storage.ts           # chrome.storage wrapper (config → sync, audit log → local)
 ├── public/icons/            # Extension icons (SVG)
-├── tests/                   # Unit tests (Vitest)
+├── tests/                   # Vitest unit tests (detector.test.ts)
 ├── scripts/                 # Build helpers
 └── .github/workflows/       # CI pipeline
 ```

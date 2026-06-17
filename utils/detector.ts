@@ -9,7 +9,7 @@ import type { DetectionPattern, Severity } from './patterns';
 import { PATTERNS } from './patterns';
 import { isHighEntropy } from './entropy';
 
-export interface DetectionResult {
+interface DetectionResult {
   matched: boolean;
   findings: Finding[];
   /** Total time to run detection in ms */
@@ -28,7 +28,7 @@ export interface Finding {
   length: number;
 }
 
-export interface DetectionOptions {
+interface DetectionOptions {
   /** Minimum severity to report (default: 'low' — report everything) */
   minSeverity?: Severity;
   /** Custom patterns to include (optional, from user config) */
@@ -66,6 +66,8 @@ export function detectSecrets(text: string, options: DetectionOptions = {}): Det
   const seenMatches = new Set<string>();
 
   for (const pattern of allPatterns) {
+    // Timeout guard: abort if detection exceeds 200ms (ReDoS protection)
+    if (performance.now() - start > 200) break;
     if (severityOrder.indexOf(pattern.severity) < minIndex) continue;
 
     // Check context requirement if present

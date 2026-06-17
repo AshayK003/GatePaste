@@ -7,7 +7,7 @@
 
 import type { Severity } from './patterns';
 
-export interface GatePasteConfig {
+interface GatePasteConfig {
   /** Whether automatic paste interception is enabled */
   enabled: boolean;
   /** Whether to show the warning overlay on detection */
@@ -34,7 +34,7 @@ export interface AuditEntry {
   action: 'masked' | 'pasted' | 'blocked';
 }
 
-export interface StorageSchema {
+interface StorageSchema {
   config: GatePasteConfig;
   domainRules: DomainRule[];
   auditLog: AuditEntry[];
@@ -81,13 +81,6 @@ export async function set<K extends keyof StorageSchema>(key: K, value: StorageS
 export async function getAll(): Promise<StorageSchema> {
   const result = await chrome.storage.sync.get(null);
   return { ...DEFAULTS, ...result };
-}
-
-/**
- * Reset all settings to defaults.
- */
-export async function resetAll(): Promise<void> {
-  await chrome.storage.sync.clear();
 }
 
 /**

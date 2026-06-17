@@ -13,18 +13,30 @@
 import { addAuditEntry } from '../utils/storage';
 import type { AuditEntry } from '../utils/storage';
 
+function isValidAuditEntry(entry: unknown): entry is AuditEntry {
+  return (
+    typeof entry === 'object' &&
+    entry !== null &&
+    typeof (entry as AuditEntry).timestamp === 'number' &&
+    typeof (entry as AuditEntry).domain === 'string' &&
+    typeof (entry as AuditEntry).patternId === 'string' &&
+    typeof (entry as AuditEntry).patternName === 'string' &&
+    ['masked', 'pasted', 'blocked'].includes((entry as AuditEntry).action)
+  );
+}
+
 // ── Message Types ──────────────────────────────────────────────────────
 
-export interface AuditLogMessage {
+interface AuditLogMessage {
   type: 'AUDIT_LOG';
   entry: AuditEntry;
 }
 
-export interface ConfigRequestMessage {
+interface ConfigRequestMessage {
   type: 'GET_CONFIG';
 }
 
-export type ExtensionMessage = AuditLogMessage | ConfigRequestMessage;
+type ExtensionMessage = AuditLogMessage | ConfigRequestMessage;
 
 export default defineBackground(() => {
   // ── Message Handler ─────────────────────────────────────────────────────
@@ -35,6 +47,11 @@ export default defineBackground(() => {
   ): boolean | undefined => {
     switch (message.type) {
       case 'AUDIT_LOG':
+        if (!isValidAuditEntry(message.entry)) {
+          console.warn('GatePaste: invalid audit entry rejected', message.entry);
+          sendResponse({ success: false, error: 'invalid entry' });
+          return false;
+        }
         addAuditEntry(message.entry).catch(console.error);
         sendResponse({ success: true });
         return true;

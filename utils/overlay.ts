@@ -27,6 +27,10 @@ export interface OverlayConfig {
   showDomainOptOut?: boolean;
 }
 
+function escapeHtml(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 const STYLES = `
 :host {
   all: initial;
@@ -199,15 +203,15 @@ export function showOverlay(
             <span class="secret-type">⚠ Secret Detected</span>
             <span class="risk-badge ${riskClass}">${severityLabel}</span>
           </p>
-          <p style="margin: 0 0 8px 0; color: #666; font-size: 13px;">${topFinding.patternName}</p>
-          <div class="match-value">${maskedMatch}</div>
+          <p style="margin: 0 0 8px 0; color: #666; font-size: 13px;">${escapeHtml(topFinding.patternName)}</p>
+          <div class="match-value">${escapeHtml(maskedMatch)}</div>
           ${findings.length > 1 ? `<p style="color: #888; font-size: 12px; margin: 0;">+${findings.length - 1} more match${findings.length > 2 ? 'es' : ''}</p>` : ''}
           <p class="warning-text">This is a form field. Are you sure you want to paste a credential here?</p>
         </div>
         <div class="actions">
-          <button class="btn btn-mask" data-action="mask">${config.maskLabel || 'Mask & Paste'}</button>
-          <button class="btn btn-raw" data-action="raw">${config.rawLabel || 'Paste Raw'}</button>
-          <button class="btn btn-cancel" data-action="cancel">${config.cancelLabel || 'Cancel'}</button>
+          <button class="btn btn-mask" data-action="mask">${escapeHtml(config.maskLabel || 'Mask & Paste')}</button>
+          <button class="btn btn-raw" data-action="raw">${escapeHtml(config.rawLabel || 'Paste Raw')}</button>
+          <button class="btn btn-cancel" data-action="cancel">${escapeHtml(config.cancelLabel || 'Cancel')}</button>
         </div>
         ${config.showDomainOptOut !== false ? '<label class="opt-out"><input type="checkbox" id="dontAskAgain"> Don\'t ask again for this domain</label>' : ''}
       </div>

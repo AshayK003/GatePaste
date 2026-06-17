@@ -443,16 +443,3 @@ export const PATTERNS: DetectionPattern[] = [
     testCases: ['ansible_vault_password = "my-vault-secret"'],
   },
 ];
-
-/** Get patterns by severity level */
-export function getPatternsBySeverity(minSeverity: Severity): DetectionPattern[] {
-  const order: Severity[] = ['low', 'medium', 'high', 'critical'];
-  const minIndex = order.indexOf(minSeverity);
-  if (minIndex === -1) return [];
-  return PATTERNS.filter((p) => order.indexOf(p.severity) >= minIndex);
-}
-
-/** Check if text matches a specific pattern by id */
-export function getPatternById(id: string): DetectionPattern | undefined {
-  return PATTERNS.find((p) => p.id === id);
-}
