@@ -218,6 +218,24 @@ describe('URL Credential Detection', () => {
   });
 });
 
+// ── Entropy Filter ─────────────────────────────────────────────────
+
+describe('Entropy Filter', () => {
+  it('filters out low-entropy matches from entropy-thresholded patterns', () => {
+    const text = 'SECRET_KEY=aaaaaaaabbbbbbbb';
+    const result = detectSecrets(text, { minSeverity: 'low' });
+    // Repeated chars have low entropy < 4.0, so generic-secret-env should be filtered
+    expect(result.matched).toBe(false);
+  });
+
+  it('allows high-entropy matches through entropy-thresholded patterns', () => {
+    const text = 'SECRET_KEY=a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6';
+    const result = detectSecrets(text, { minSeverity: 'low' });
+    expect(result.matched).toBe(true);
+    expect(result.findings.some((f) => f.patternId === 'generic-secret-env')).toBe(true);
+  });
+});
+
 // ── Detection Engine Integration ───────────────────────────────────────
 
 describe('detectSecrets Integration', () => {
@@ -239,7 +257,7 @@ describe('detectSecrets Integration', () => {
   });
 
   it('supports minSeverity filtering', () => {
-    const text = 'password = "hunter2"'; // medium severity
+    const text = 'password = "s3cur3P@ss!w0rd_w1th_high_3ntr0py"'; // medium severity, high entropy
     const all = detectSecrets(text, { minSeverity: 'low' });
     const highOnly = detectSecrets(text, { minSeverity: 'high' });
     expect(all.matched).toBe(true);

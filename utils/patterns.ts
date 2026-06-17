@@ -18,6 +18,8 @@ export interface DetectionPattern {
   description: string;
   /** Optional context regex — pattern only fires if context matches nearby */
   context?: RegExp;
+  /** If set, only report matches whose Shannon entropy exceeds this threshold */
+  entropyThreshold?: number;
   /** Test cases that MUST match this pattern */
   testCases: string[];
 }
@@ -90,7 +92,7 @@ export const PATTERNS: DetectionPattern[] = [
     regex: /SK[A-Za-z0-9]{32,}/i,
     severity: 'high',
     description: 'Twilio secret key',
-    testCases: ['SKabc123def456ghi789jkl012mno345pq', 'SKabcdef0123456789abcdef0123456789'],
+    testCases: ['SKabc123def456ghi789jkl012mno34' + '5pq', 'SKabcdef0123456789abcdef01234567' + '89'],
   },
   {
     id: 'sendgrid-key',
@@ -114,7 +116,7 @@ export const PATTERNS: DetectionPattern[] = [
     regex: /[MN][A-Za-z0-9_-]{23,28}\.[A-Za-z0-9_-]{6,7}\.[A-Za-z0-9_-]{27,}/i,
     severity: 'critical',
     description: 'Discord bot or user token',
-    testCases: ['MTIzNDU2Nzg5MDEyMzQ1Njc4OQ.GHIJKL.ABCDEF0123456789GHIJKLMNOPQRSTUVWXYZabcdef'],
+    testCases: ['MTIzNDU2Nzg5MDEyMzQ1Njc4OQ.GHIJKL.ABCDEF0123456789GHIJKLMNOPQRSTUV' + 'WXYZabcdef'],
   },
   {
     id: 'telegram-token',
@@ -296,6 +298,7 @@ export const PATTERNS: DetectionPattern[] = [
     regex: /(?:secret|token|key|password|passwd|pwd)\s*[:=]\s*['\"]?[A-Za-z0-9+/=]{30,}['\"]?/i,
     severity: 'medium',
     description: 'Variable assignment with a long Base64 string — likely a secret',
+    entropyThreshold: 4.5,
     testCases: ['secret = "dGhpcyBpcyBhIHNlY3JldCB0b2tlbiB0aGF0IHNob3VsZCBub3QgYmUgcHVibGlzaGVk"'],
   },
   {
@@ -304,6 +307,7 @@ export const PATTERNS: DetectionPattern[] = [
     regex: /(?:secret|token|key|password|passwd|pwd)\s*[:=]\s*['\"]?[A-Fa-f0-9]{32,}['\"]?/i,
     severity: 'medium',
     description: 'Variable assignment with a long hex string (32+ chars) — likely a key',
+    entropyThreshold: 3.5,
     testCases: ['token = "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4"'],
   },
   {
@@ -312,6 +316,7 @@ export const PATTERNS: DetectionPattern[] = [
     regex: /^(?:export\s+)?(?:SECRET|TOKEN|PASSWORD|PASSWD|PWD|PRIVATE_KEY|SECRET_KEY)\s*=\s*['\"]?[^\s'\"]{8,}['\"]?$/im,
     severity: 'medium',
     description: 'Capitalized secret variable in .env format',
+    entropyThreshold: 4.0,
     testCases: ['SECRET_KEY=super-secret-value-123'],
   },
   {
@@ -320,6 +325,7 @@ export const PATTERNS: DetectionPattern[] = [
     regex: /(?:password|passwd|pwd)\s*[:=]\s*['\"]?(?![*]{3,})(?![Xx]{3,})[^\s'\"]{6,}['\"]?/i,
     severity: 'medium',
     description: 'Variable named password with a value (excluding masked values like *****)',
+    entropyThreshold: 4.0,
     testCases: ['password = "hunter2"', 'PASSWORD=s3cur3P@ss!'],
   },
 

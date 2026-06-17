@@ -2,12 +2,12 @@
 
 **Detect secrets in your clipboard before you paste into web forms.**
 
-GatePaste is a browser extension that runs a 50+ pattern detection engine on every paste event. If it finds an API key, private key, database connection string, or other credential, it warns you with a clean overlay before the data reaches the form field.
+GatePaste is a browser extension that runs a 50+ pattern detection engine on every paste event, with Shannon entropy verification to reduce false positives. If it finds an API key, private key, database connection string, or other credential, it warns you with a clean overlay before the data reaches the form field.
 
 ## Why GatePaste?
 
 - 🛡️ **Prevent accidental exposure** — don't paste `AWS_SECRET_ACCESS_KEY` into a GitHub issue or `sk-proj-*` into a ChatGPT prompt
-- ⚡ **~1ms detection** — 50+ regex patterns run in under 2ms, no perceptible lag
+- ⚡ **~1ms detection** — 50+ regex patterns run in under 2ms, no perceptible lag, with entropy verification on generic patterns
 - 🔒 **Privacy-first** — clipboard content never leaves your device. All detection is local
 - 🎨 **Sleek overlay** — Shadow DOM isolated warning card with mask / raw / cancel options
 - ⚙️ **Configurable** — per-domain rules, sensitivity levels, audit log
@@ -39,7 +39,7 @@ GatePaste/
 │   ├── popup/               # Browser action popup UI
 │   └── options/             # Settings page
 ├── utils/
-│   ├── detector.ts          # Detection engine — runs 50+ regex patterns
+│   ├── detector.ts          # Detection engine — regex patterns + entropy verification
 │   ├── entropy.ts           # Shannon entropy calculator
 │   ├── patterns.ts          # 50+ secret patterns (8 categories)
 │   ├── overlay.ts           # Shadow DOM warning overlay
@@ -92,6 +92,7 @@ Edit `utils/patterns.ts` — add a new entry to the `PATTERNS` array with:
 - `name` — human-readable name
 - `regex` — detection regex (must include `i` flag)
 - `severity` — one of `low`, `medium`, `high`, `critical`
+- `entropyThreshold` — optional; if set, only reports matches whose Shannon entropy exceeds this value (reduces false positives on generic patterns)
 - `testCases` — array of strings that should match (used in tests)
 
 Then add corresponding tests in `tests/detector.test.ts`.

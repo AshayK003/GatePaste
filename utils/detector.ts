@@ -7,6 +7,7 @@
 
 import type { DetectionPattern, Severity } from './patterns';
 import { PATTERNS } from './patterns';
+import { isHighEntropy } from './entropy';
 
 export interface DetectionResult {
   matched: boolean;
@@ -80,6 +81,7 @@ export function detectSecrets(text: string, options: DetectionOptions = {}): Det
       if (match) {
         const matchedText = match[0].trim();
         if (!seenMatches.has(matchedText)) {
+          if (pattern.entropyThreshold !== undefined && !isHighEntropy(matchedText, pattern.entropyThreshold)) continue;
           seenMatches.add(matchedText);
           findings.push({
             patternId: pattern.id,
@@ -100,6 +102,11 @@ export function detectSecrets(text: string, options: DetectionOptions = {}): Det
       const matchedText = match[0].trim();
 
       if (seenMatches.has(matchedText)) {
+        if (match.index === regex.lastIndex) regex.lastIndex++;
+        continue;
+      }
+
+      if (pattern.entropyThreshold !== undefined && !isHighEntropy(matchedText, pattern.entropyThreshold)) {
         if (match.index === regex.lastIndex) regex.lastIndex++;
         continue;
       }
