@@ -38,7 +38,6 @@ export interface StorageSchema {
   config: GatePasteConfig;
   domainRules: DomainRule[];
   auditLog: AuditEntry[];
-  customPatterns: string; // JSON stringified array
 }
 
 const DEFAULTS: StorageSchema = {
@@ -51,14 +50,21 @@ const DEFAULTS: StorageSchema = {
   },
   domainRules: [],
   auditLog: [],
-  customPatterns: '[]',
+};
+
+// Audit log goes to local storage to avoid hitting chrome.storage.sync's
+// 102,400-byte total quota. Everything else stays in sync for roaming.
+const STORAGE: Record<keyof StorageSchema, chrome.storage.StorageArea> = {
+  config: chrome.storage.sync,
+  domainRules: chrome.storage.sync,
+  auditLog: chrome.storage.local,
 };
 
 /**
  * Get a value from storage with fallback to defaults.
  */
 export async function get<K extends keyof StorageSchema>(key: K): Promise<StorageSchema[K]> {
-  const result = await chrome.storage.sync.get(key);
+  const result = await STORAGE[key].get(key);
   return result[key] ?? DEFAULTS[key];
 }
 
@@ -66,7 +72,7 @@ export async function get<K extends keyof StorageSchema>(key: K): Promise<Storag
  * Set a value in storage.
  */
 export async function set<K extends keyof StorageSchema>(key: K, value: StorageSchema[K]): Promise<void> {
-  await chrome.storage.sync.set({ [key]: value });
+  await STORAGE[key].set({ [key]: value });
 }
 
 /**

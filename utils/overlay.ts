@@ -9,6 +9,11 @@ import type { Finding } from './detector';
 
 export type OverlayAction = 'mask' | 'raw' | 'cancel';
 
+export interface OverlayResult {
+  action: OverlayAction;
+  domainOptOut: boolean;
+}
+
 export interface OverlayConfig {
   /** Text shown at top of overlay */
   title?: string;
@@ -165,7 +170,7 @@ const STYLES = `
 export function showOverlay(
   findings: Finding[],
   config: OverlayConfig = {},
-): Promise<OverlayAction> {
+): Promise<OverlayResult> {
   return new Promise((resolve) => {
     const host = document.createElement('div');
     const shadow = host.attachShadow({ mode: 'closed' });
@@ -211,12 +216,13 @@ export function showOverlay(
     // Handle actions
     const handleAction = (action: OverlayAction) => {
       const dontAskAgain = shadow.querySelector('#dontAskAgain') as HTMLInputElement | null;
-      const payload = {
+      const result: OverlayResult = {
         action,
         domainOptOut: dontAskAgain?.checked ?? false,
       };
+      document.removeEventListener('keydown', onKeyDown);
       host.remove();
-      resolve(payload.action);
+      resolve(result);
     };
 
     shadow.querySelector('[data-action="mask"]')?.addEventListener('click', () => handleAction('mask'));
@@ -225,6 +231,12 @@ export function showOverlay(
 
     // Close on backdrop click = cancel
     shadow.querySelector('.backdrop')?.addEventListener('click', () => handleAction('cancel'));
+
+    // Close on Escape = cancel
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleAction('cancel');
+    };
+    document.addEventListener('keydown', onKeyDown);
 
     document.documentElement.appendChild(host);
   });

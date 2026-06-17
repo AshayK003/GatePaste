@@ -70,7 +70,7 @@ h1 {
 }
 
 .domain {
-  color: #888;
+  color: #666;
   font-size: 12px;
   margin-top: 4px;
 }
@@ -82,7 +82,7 @@ h1 {
 }
 
 .scan-count {
-  color: #888;
+  color: #666;
   font-size: 12px;
   margin-bottom: 8px;
 }
@@ -107,6 +107,11 @@ h1 {
   background: #2d2d5e;
 }
 
+.btn-primary:disabled {
+  background: #9e9e9e;
+  cursor: not-allowed;
+}
+
 .btn-text {
   background: transparent;
   color: #555;
@@ -115,6 +120,15 @@ h1 {
 
 .btn-text:hover {
   background: #f0f0f0;
+}
+
+.btn:focus-visible {
+  outline: 2px solid #1a1a2e;
+  outline-offset: 2px;
+}
+
+.scan-result:not([hidden]) + .loading {
+  display: none;
 }
 
 /* Scan Result */

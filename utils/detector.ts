@@ -56,7 +56,7 @@ export function detectSecrets(text: string, options: DetectionOptions = {}): Det
   const { minSeverity = 'low', customPatterns = [], allowlistedDomains = [], currentDomain = '' } = options;
 
   // Check domain allowlist
-  if (currentDomain && allowlistedDomains.some((d) => currentDomain.includes(d) || d.includes(currentDomain))) {
+  if (currentDomain && allowlistedDomains.some((d) => currentDomain === d || currentDomain.endsWith('.' + d))) {
     return { matched: false, findings: [], durationMs: performance.now() - start };
   }
 

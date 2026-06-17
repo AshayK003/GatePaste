@@ -7,10 +7,11 @@ GatePaste is a browser extension that runs a 50+ pattern detection engine on eve
 ## Why GatePaste?
 
 - 🛡️ **Prevent accidental exposure** — don't paste `AWS_SECRET_ACCESS_KEY` into a GitHub issue or `sk-proj-*` into a ChatGPT prompt
-- ⚡ **~1ms detection** — 50+ regex patterns run in under 2ms, no perceptible lag, with entropy verification on generic patterns
+- ⚡ **~1ms detection** — 50+ regex patterns run in under 2ms, with entropy verification on generic patterns. Config cached in-memory after first paste
 - 🔒 **Privacy-first** — clipboard content never leaves your device. All detection is local
-- 🎨 **Sleek overlay** — Shadow DOM isolated warning card with mask / raw / cancel options
-- ⚙️ **Configurable** — per-domain rules, sensitivity levels, audit log
+- 🎨 **Sleek overlay** — Shadow DOM isolated warning card with mask / raw / cancel options, Escape key support, "Don't ask again" per-domain opt-out
+- ⚙️ **Configurable** — per-domain rules (exact + subdomain matching, no substring false positives), sensitivity levels, audit log
+- ♿ **Accessible** — keyboard focus indicators, WCAG AA contrast, screen reader compatible
 
 ## Quick Start
 
@@ -42,13 +43,21 @@ GatePaste/
 │   ├── detector.ts          # Detection engine — regex patterns + entropy verification
 │   ├── entropy.ts           # Shannon entropy calculator
 │   ├── patterns.ts          # 50+ secret patterns (8 categories)
-│   ├── overlay.ts           # Shadow DOM warning overlay
-│   └── storage.ts           # chrome.storage wrapper
+│   ├── overlay.ts           # Shadow DOM warning overlay (Escape to close, domain opt-out)
+│   └── storage.ts           # chrome.storage wrapper (config → sync, audit log → local)
 ├── public/icons/            # Extension icons (SVG)
 ├── tests/                   # Unit tests (Vitest)
 ├── scripts/                 # Build helpers
 └── .github/workflows/       # CI pipeline
 ```
+
+## Architecture
+
+**Storage:** Config and domain rules sync across devices via `chrome.storage.sync`. Audit log uses `chrome.storage.local` to avoid the 102KB sync quota limit.
+
+**Config cache:** Content script caches config in memory after first fetch. Cache is invalidated on storage changes — subsequent pastes skip the service worker message round-trip.
+
+**Domain matching:** Rules use exact match or subdomain suffix (`.endsWith('.' + domain)`) — never substring `includes()`, which could match unintended domains like `evil-example.com` for a rule targeting `example.com`.
 
 ## Detection Engine
 

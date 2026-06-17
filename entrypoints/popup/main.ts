@@ -2,21 +2,19 @@
  * GatePaste — Popup Script
  */
 
-import { getAuditLog, get } from '../../utils/storage';
+import { getAuditLog, get, set } from '../../utils/storage';
 
 function updateStatus() {
   const indicator = document.getElementById('statusIndicator')!;
   const statusText = document.getElementById('statusText')!;
   const domainDisplay = document.getElementById('domainDisplay')!;
+  const pauseBtn = document.getElementById('pauseBtn')!;
 
   get('config').then((config) => {
-    if (config.enabled) {
-      indicator.className = 'status-dot active';
-      statusText.textContent = 'Active';
-    } else {
-      indicator.className = 'status-dot inactive';
-      statusText.textContent = 'Paused';
-    }
+    const enabled = config.enabled;
+    indicator.className = `status-dot ${enabled ? 'active' : 'inactive'}`;
+    statusText.textContent = enabled ? 'Active' : 'Paused';
+    pauseBtn.textContent = enabled ? '🔇 Pause for Site' : '🔊 Resume for Site';
   });
 
   // Show current tab domain
@@ -45,9 +43,12 @@ async function handleScan() {
   const resultTitle = document.getElementById('resultTitle')!;
   const resultList = document.getElementById('resultList')!;
   const errorMsg = document.getElementById('errorMsg')!;
+  const scanBtn = document.getElementById('scanBtn') as HTMLButtonElement;
 
   errorMsg.hidden = true;
   resultDiv.hidden = true;
+  scanBtn.disabled = true;
+  scanBtn.textContent = '⏳ Scanning...';
 
   try {
     const text = await navigator.clipboard.readText();
@@ -74,6 +75,9 @@ async function handleScan() {
   } catch (err) {
     errorMsg.textContent = `Error: ${err instanceof Error ? err.message : 'Could not read clipboard'}`;
     errorMsg.hidden = false;
+  } finally {
+    scanBtn.disabled = false;
+    scanBtn.textContent = '📋 Scan Clipboard';
   }
 }
 
@@ -90,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('pauseBtn')!.addEventListener('click', () => {
     get('config').then((config) => {
       config.enabled = !config.enabled;
-      chrome.storage.sync.set({ config });
+      set('config', config);
       updateStatus();
     });
   });

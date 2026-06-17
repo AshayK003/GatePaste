@@ -2,7 +2,7 @@
  * GatePaste — Options Page Script
  */
 
-import { getAll, set, get, resetAll, getAuditLog } from '../../utils/storage';
+import { getAll, set, get, getAuditLog } from '../../utils/storage';
 import type { DomainRule } from '../../utils/storage';
 
 async function loadSettings(): Promise<void> {
@@ -109,6 +109,7 @@ document.getElementById('addDomainBtn')?.addEventListener('click', async () => {
 
 // Clear audit log
 document.getElementById('clearAuditBtn')?.addEventListener('click', async () => {
+  if (!window.confirm('Clear all audit log entries? This cannot be undone.')) return;
   await set('auditLog', []);
   renderAuditLog();
 });

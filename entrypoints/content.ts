@@ -11,13 +11,27 @@
 
 import { detectSecrets } from '../utils/detector';
 import { showOverlay } from '../utils/overlay';
-import type { OverlayAction } from '../utils/overlay';
+import type { OverlayResult } from '../utils/overlay';
 import type { Finding } from '../utils/detector';
-import { addAuditEntry } from '../utils/storage';
+import { addAuditEntry, set, get } from '../utils/storage';
+import type { DomainRule } from '../utils/storage';
+
+type Config = {
+  enabled: boolean;
+  minSeverity: string;
+  domainRules: { domain: string; action: string }[];
+};
+
+let cachedConfig: Config | null = null;
 
 export default defineContentScript({
   matches: ['<all_urls>'],
   main() {
+    // Invalidate config cache when user changes settings
+    chrome.storage.onChanged.addListener((changes) => {
+      if (changes.config || changes.domainRules) cachedConfig = null;
+    });
+
     // ── Paste Interception ──────────────────────────────────────────────────
     document.addEventListener('paste', async (event: ClipboardEvent) => {
       const config = await getConfig();
@@ -29,7 +43,7 @@ export default defineContentScript({
       // Check domain rules
       const domain = window.location.hostname;
       const matchingRule = config.domainRules.find(
-        (r) => domain.includes(r.domain) || r.domain.includes(domain),
+        (r) => domain === r.domain || domain.endsWith('.' + r.domain),
       );
       if (matchingRule?.action === 'allow') return;
       if (matchingRule?.action === 'block') {
@@ -46,39 +60,32 @@ export default defineContentScript({
 
       // Intercept the paste
       event.preventDefault();
-      const action = await showOverlay(result.findings);
-      await handleAction(action, text, result.findings, domain);
+      const overlayResult = await showOverlay(result.findings);
+
+      // Handle "Don't ask again" — save domain as allow
+      if (overlayResult.domainOptOut) {
+        const rules = await get('domainRules');
+        if (!rules.some((r) => r.domain === domain)) {
+          rules.push({ domain, action: 'allow' });
+          await set('domainRules', rules);
+        }
+      }
+
+      await handleAction(overlayResult.action, text, result.findings, domain);
     });
 
-    // ── SPA Navigation Handling ─────────────────────────────────────────────
-    let lastUrl = location.href;
-    new MutationObserver(() => {
-      const url = location.href;
-      if (url !== lastUrl) {
-        lastUrl = url;
-      }
-    }).observe(document, { subtree: true, childList: true });
+
   },
 });
 
 // ── Helpers ─────────────────────────────────────────────────────────────
 
-async function getConfig(): Promise<{
-  enabled: boolean;
-  minSeverity: string;
-  domainRules: { domain: string; action: string }[];
-}> {
+async function getConfig(): Promise<Config> {
+  if (cachedConfig) return cachedConfig;
   return new Promise((resolve) => {
     chrome.runtime.sendMessage({ type: 'GET_CONFIG' }, (response) => {
-      if (response) {
-        resolve(response as {
-          enabled: boolean;
-          minSeverity: string;
-          domainRules: { domain: string; action: string }[];
-        });
-      } else {
-        resolve({ enabled: true, minSeverity: 'low', domainRules: [] });
-      }
+      cachedConfig = response ?? { enabled: true, minSeverity: 'low', domainRules: [] };
+      resolve(cachedConfig);
     });
   });
 }
@@ -97,7 +104,7 @@ async function handleAction(
       patternName: finding.patternName,
       severity: finding.severity,
       action: action === 'mask' ? 'masked' : action === 'raw' ? 'pasted' : 'blocked',
-    }).catch(() => {});
+    }).catch((err) => console.warn('[GatePaste] Failed to write audit entry:', err));
   }
 
   if (action === 'mask') {
